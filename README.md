@@ -1,6 +1,45 @@
 # soal-shift-sisop-modul-1-D05-2021
 
-## 1. 
+## 1. ERROR dan INFO USER
+Soal 1 ini, diminta untuk mencari info dan error dari suatu user di `syslog.log`, lalu menghitungnya dan menampilkannya di `user_statistic.csv`
+
+Pertama, untuk mencari pesan log pada barisnya dari error dan input yang ada di `syslog.log`, kita dapat menulis perintah seperti berikut :
+```
+grep -o "[I|E].*" syslog.log
+```
+Grep -o digunakan untuk mencari sebuah teks yang dimana pada kasus ini untuk mencari teks yang memiliki awalan huruf I / E dari `syslog.log` 
+Kedua, untuk mencari pesan error dan menghitungnya bisa, ditulis seperti berikut :
+```
+grep -o "ERROR.*" syslog.log | cut -d "(" -f1 | sort | uniq -c
+```
+Setelah mencari satu line error yang dibutuhkan dengan grep dari `syslog.log` dapat dihitung menggunakan `uniq -l` untuk setiap baris errornya.
+Ketiga, untuk mencari data error dan info beserta usernamenya dapat menggunakan perintah berikut :
+```
+grep -o "ERROR.*" syslog.log | cut -d "(" -f2 | cut -d ")" -f1 | sort | uniq -c
+grep -o "INFO.*" syslog.log | cut -d "(" -f2 | cut -d ")" -f1 | sort | uniq -c
+```
+Untuk mengambil nama user bisa menggunakan cut yang diambil dari karakter "(" sampai ")"
+Keempat, mencari error dan jumlahnya lalu dimasukkan ke dalam `error_message.csv` dapat dilakukan dengan perintah berikut :
+```
+modified=$(grep "The ticket was modified while updating" syslog.log | wc -l)
+echo "Error,Count" > error_message.csv
+printf "The ticket was modified while updating,%d" $modified | sort -t, -nr -k2 >> error_message.csv
+```
+Setelah kita mencari error yang dibutuhkan dengan menggunakan grep dari `syslog.log`, kita hitung dengan `wc -l` per line dari errornya setelah itu dimasukkan ke dalam variable. Lalu buat header `error_message.csv`, print kalimat error dan countnya dengan di sort dan dibagi menjadi 2 kolom menjadi -k2.
+Kelima, untuk mencari jumlah error dan info beserta usernamenya dapat dilakukan dengan perintah berikut :
+```
+tr ' ' '\n' < syslog.log > test.txt
+grep -o (.*)" test.txt | tr -d "(" | tr -d ")" | sort | uniq > user_statistic.txt
+echo "Username,INFO,ERROR" > user_statistic.csv
+while read -r userName
+do
+info=$(grep -E -o "INFO.*($userName)" syslog.log | wc -l)
+error=$(grep -E -o "ERROR.*($userName)" syslog.log | wc -l)
+echo "$userName,$info,$error" >> user_statistic.csv
+done < user_statistic.txt
+```
+Pisahkan semua kata dari linenya menggunakan tr ' ' '\n' mengganti spasi menjadi newline dari `syslog.log` dan pindahkan datanya ke `test.txt`. Ambil semua nama dengan grep yang ada () pada `test.txt` lalu hapus "(" dan ")", sort, uniq, dan input ke user_statistic.txt. Lalu buat header pada `user_statistic.csv`.
+Gunakan `while` untuk menghitung jumlah error dan info tiap usernamenya menggunakan `grep` lalu masukkan ke `user_statistic.csv`.
 
 
 ## 2. Kesimpulan TokoShiSop
