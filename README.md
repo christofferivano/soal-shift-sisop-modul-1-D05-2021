@@ -216,4 +216,100 @@ Wilayah bagian (region) yang memiliki total keuntungan (profit) yang paling sedi
 ```
 
 
-## 3.
+## 3. Koleksi Foto Kuuhaku
+Untuk soal ketiga ini diminta untuk membantu Kuuhaku mewujudkan idenya supaya bisa mengoleksi foto-foto digital tanpa perlu repot-repot mencarinya manual serta menyembunyikannya menggunakan zip ber-password secara otomatis. Untuk melaksanakan idenya ada 5 langkah yang harus dilakukan yang dibagi menjadi poin a, b, c, d, e.
+### 3. a Script untuk mengunduh 23 gambar
+Ide yang pertama yang harus dilakukan adalah membuat sebuah script yang bisa mengunduh 23 gambar dari link berikut `https://loremflickr.com/320/240/kitten` dan menyimpan lognya ke sebuah file bernama `Foto.log`. Dengan menggunakan command wget dan looping menggunakan for maka script bisa dibuat lalu sekalian dengan wget kita memasukkan log-nya ke Foto.log dan memberikan nama file foto yang diunduh secara berurutan Koleksi_XX. 
+```
+for ((num=1; num<=23; num=num+1))
+do
+if [ $num -le 9 ]
+then
+wget -a Foto.log https://loremflickr.com/320/240/kitten -O "Koleksi_0$num"
+else
+wget -a Foto.log https://loremflickr.com/320/240/kitten -O "Koleksi_$num"
+fi
+done
+```
+Namun, tidak berhenti di sini saja, karena rupanya foto yang diunduh itu acak sehingga beberapa foto ada yang kembar. Oleh karena itu, foto-foto yang duplikat perlu dideteksi menggunakan command md5sum dan AWK mengidentifikasi MD5 (Message Digest Algorithm 5) foto-foto mana saja yang memiliki kesamaan dan menghapus salah satunya lalu me-rename kembali file Koleksi sehingga jadi berurutan lagi apabila ada file foto yang terhapus. 
+```
+md5sum * | \
+sort | \
+awk 'BEGIN{lasthash = ""} $1 == lasthash {print $2} {lasthash = $1}' | \
+xargs rm
+
+i=1
+for fi in Koleksi_*; do
+	mv "$fi" Koleksi_$i
+	i=$((i+1))
+done
+```
+Menggabungkan semuanya dan menyimpan script dengan nama soal3a.sh.
+### 3. b Menjalankan script pengunduh foto secara terjadwal
+Script pengunduh foto yang telah dibuat dijadwalkan untuk dijalankan setiap pukul 20.00 dari tanggal 1 tujuh hari sekali dan dari tanggal 2 4 hari sekali tiap bulan. dengan menggunakan crontab script dijalankan kurang lebih seperti ini pengaturannya.
+```
+0 20 */7,2-31/4
+```
+Kemudian supaya lebih rapi, gambar beserta log dalam Foto.log dipindahkan dalam sebuah folder yang dinamai berdasarkan tanggal hari ini dengan format "DD-MM-YYYY". Pendekatan awal berpikiran bisa dilaksanakan langsung lewat crontab tetapi mengalami kebuntuan bagaimana supaya bisa membuat folder dan hasilnya disimpan di dalamnya. Lalu, merubah pendekatan dan beralih ke script yang harus diubah. Pada wget terdapat command --force-directories untuk force creation of directories tetapi tidak berjalan sesuai keinginan karena folder benar memang terbuat sesuai penamaan tanggal hari ini. Namun, gambar yang diunduh tetap berada di luar folder dimana maksud yang diinginkan koleksi gambar bisa langsung disimpan dalam folder yang telah dibuat. Akhirnya mengambil langkah simpel dengan command mkdir dan mengubah direktori saat ini menjadi folder yang telah dibuat dengan command cd sebelum menjalankan script pengunduh.
+```
+mkdir "/home/amanullahd/$(date +"%d-%m-%Y")"
+cd "/home/amanullahd/$(date +"%d-%m-%Y")"
+```
+### 3. c Menjalankan script bergantian tiap hari
+Untuk ide ketiga ini bagaimana sedemikian rupa script bisa dijalankan untuk mengunduh foto dari 2 URL secara bergantian tiap hari. Langkah penyelesaian pertama adalah menggunakan semacam flag switch untuk bisa bergantian menjalankan unduhan yang mana tetapi cara ini terkendala terjadinya reset sehingga tiap kali script dijalankan tetap saja hanya melakukan hal yang sama tidak bisa bergantian. Untuk menangani kendala ini kepikiran untuk menyimpan nilai suatu tinggal di sebuah file sehingga tiap kali script dijalankan tidak terpengaruh oleh reset karena saat deklarasi nilai dalam file tidak berhubungan secara langsung. Namun, untuk penyelesaian ini juga terkendala dalam hal pengambilan argumen dalam file berupa tanggal yang bisa dilakukan operasi relasional. Oleh karena itu, dikarenakan tanggal untuk memulainya bebas kapan saja maka sekalian saja menetapkan tiap tanggal di tiap bulan dibedakan berupa ganjil dan genap sehingga terjadi pergantian di tiap harinya juga tiap bulan.
+```
+currentdate=$(date +%d)
+currentmonth=$(date +%m)
+currentyear=$(date +%Y)
+if [ $(expr $currentyear % 4) == "0" ];
+then
+	if [ $currentmonth -eq 1 ] || [ $currentmonth -eq 3 ] || [ $currentmonth -eq 6 ] || [ $currentmonth -eq 7 ] || [ $currentmonth -eq 9 ] || [ $currentmonth -eq 10 ]
+        then
+                if [ $(expr $currentdate % 2) != "0" ];
+                then
+                gambar_kucing
+                else
+                gambar_kelinci
+                fi
+        else
+        if [ $(expr $currentdate % 2) != "0" ];
+                then
+                gambar_kelinci
+                else
+                gambar_kucing
+                fi
+        fi
+else
+	if [ $currentmonth -eq 1 ] || [ $currentmonth -eq 4 ] || [ $currentmonth -eq 5 ] || [ $currentmonth -eq 8 ] || [ $currentmonth -eq 11 ] || [ $currentmonth -eq 12 ]
+	then
+		if [ $(expr $currentdate % 2) != "0" ];
+		then
+		gambar_kucing
+		else
+		gambar_kelinci
+		fi
+	else
+	if [ $(expr $currentdate % 2) != "0" ];
+                then
+                gambar_kelinci
+                else
+                gambar_kucing
+                fi
+	fi
+fi
+```
+Walaupun begitu, penyelesaian ini masih kurang tepat karena tiap tahunnya akan tetap menjalankan hal yang sama yang seharusnya bergantian sebab tanggal pada bulan Desember berakhir pada tanggal ganjil.
+### 3. d Script yang menjadikan koleksi menjadi zip ber-password
+Langkah selanjutnya adalah membuat koleksi foto yang telah diunduh menjadi zip dengan password berupa tanggal dengan format "MMDDYYYY". Dengan command zip kita tambahkan perintahnya dalam script yang telah dibuat sebelumnya. Dalam membuat zip-nya, kita buat tidak sekadar membuat tapi menggunakan update sehingga jika file Koleksi.zip bisa di-create dan bilamana sudah ada kita tinggal menambahkan ke dalamnya. Sebelum itu, karena direktori sebelumnya kita ubah menjadi dalam folder yang telah dibuat, kita ubah lagi karena yang akan kita masukkan adalah foldernya ke dalam sebuah file zip. 
+```
+cd ~
+zip -u -m --password "$(date +"%m%d%Y")" -r Koleksi.zip "Kucing_$(date +"%d-%m-%Y")"
+```
+Ketika menjalankan fungsi untuk menjalankan pengunduh foto kelinci juga diperlakukan sama ditambahkan perintah tersebut dengan bedanya Kucing ==> Kelinci.
+### 3. e Zip -> Unzip -> Zip
+Langkah terakhir adalah membuat zip hanya ketika waktu tertentu yaitu ketika pukul 07.00 sampai 18.00 dan selebihnya file zip tidak perlu ada. Hal ini dilakukan dengan perintah crontab sehingga sedemikian rupa.
+```
+0 18 * * * unzip -P "$(date +"%m%d%Y")" Koleksi.zip -d Koleksi && rm Koleksi.zip
+0 7 * * * cd Koleksi && zip -u -m --password "$(date +"%m%d%Y")" -r ../Koleksi.zip*
+```
+Dikarenakan script yang dijalankan sudah membuat zip maka kita perlu melakukan unzip di waktu pukul 18.00 dan isinya disimpan sementara dalam sebuah folder bernama Koleksi, untuk file Koleksi.zip-nya kita hapus. Lalu, pada pukul 07.00 kita masukkan lagi dalam file Koleksi.zip koleksi foto-foto sebelumnya serta Foto.log yang telah dikeluarkan sehingga seluruh folder beserta file dalam folder Koleksi masuk kembali dalam Koleksi.zip.
