@@ -8,6 +8,8 @@ Pertama, untuk mencari pesan log pada barisnya dari error dan input yang ada di 
 grep -o "[I|E].*" syslog.log
 ```
 Grep -o digunakan untuk mencari sebuah teks yang dimana pada kasus ini untuk mencari teks yang memiliki awalan huruf I / E dari `syslog.log` 
+![image](https://user-images.githubusercontent.com/73484021/113472711-41cb2a80-948f-11eb-9ee3-48167d36be5d.png)
+
 Kedua, untuk mencari pesan error dan menghitungnya bisa, ditulis seperti berikut :
 ```
 grep -o "ERROR.*" syslog.log | cut -d "(" -f1 | sort | uniq -c
