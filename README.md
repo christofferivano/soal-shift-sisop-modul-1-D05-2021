@@ -7,27 +7,44 @@ Pertama, untuk mencari pesan log pada barisnya dari error dan input yang ada di 
 ```
 grep -o "[I|E].*" syslog.log
 ```
-Grep -o digunakan untuk mencari sebuah teks yang dimana pada kasus ini untuk mencari teks yang memiliki awalan huruf I / E dari `syslog.log` 
+Grep -o digunakan untuk mencari sebuah teks yang dimana pada kasus ini untuk mencari teks yang memiliki awalan huruf I / E dari `syslog.log` sampai ke akhir line.\
 ![image](https://user-images.githubusercontent.com/73484021/113472711-41cb2a80-948f-11eb-9ee3-48167d36be5d.png)
 
 Kedua, untuk mencari pesan error dan menghitungnya bisa, ditulis seperti berikut :
 ```
 grep -o "ERROR.*" syslog.log | cut -d "(" -f1 | sort | uniq -c
 ```
-Setelah mencari satu line error yang dibutuhkan dengan grep dari `syslog.log` dapat dihitung menggunakan `uniq -l` untuk setiap baris errornya.
+Setelah mencari satu line error yang dibutuhkan dengan grep dari `syslog.log` dapat dihitung menggunakan `uniq -l` untuk setiap baris errornya. Sort dari yang paling sering muncul ERROR dari `syslog.log`.\
+![image](https://user-images.githubusercontent.com/73484021/113472795-a1c1d100-948f-11eb-9818-fa9932865d0c.png)
+
 Ketiga, untuk mencari data error dan info beserta usernamenya dapat menggunakan perintah berikut :
 ```
 grep -o "ERROR.*" syslog.log | cut -d "(" -f2 | cut -d ")" -f1 | sort | uniq -c
 grep -o "INFO.*" syslog.log | cut -d "(" -f2 | cut -d ")" -f1 | sort | uniq -c
 ```
-Untuk mengambil nama user bisa menggunakan cut yang diambil dari karakter "(" sampai ")"
+Untuk mengambil nama user bisa menggunakan cut yang diambil dari karakter "(" sampai ")"\
+![image](https://user-images.githubusercontent.com/73484021/113472887-39bfba80-9490-11eb-9c58-c7d0a173b133.png)
+
 Keempat, mencari error dan jumlahnya lalu dimasukkan ke dalam `error_message.csv` dapat dilakukan dengan perintah berikut :
 ```
 modified=$(grep "The ticket was modified while updating" syslog.log | wc -l)
+cTicket=$(grep "Permission denied while closing ticket" syslog.log | wc -l)
+closed=$(grep "Tried to add information to closed ticket" syslog.log | wc -l)
+timeout=$(grep "Timeout while retrieving information" syslog.log | wc -l)
+noExist=$(grep "Ticket doesn't exist" syslog.log | wc -l)
+connection=$(grep "Connection to DB failed" syslog.log | wc -l)
 echo "Error,Count" > error_message.csv
-printf "The ticket was modified while updating,%d" $modified | sort -t, -nr -k2 >> error_message.csv
+printf "The ticket was modified while updating,%d\n
+Permission denied while closing ticket,%d\n
+Tried to add information to closed ticket,%d\n
+Timeout while retrieving information,%d\n
+Ticket doesn't exist,%d\n
+Connection to DB failed,%d\n" $modified $cTicket $closed $timeout $noExist $ connection |
+sort -t, -nr -k2 >> error_message.csv
 ```
-Setelah kita mencari error yang dibutuhkan dengan menggunakan grep dari `syslog.log`, kita hitung dengan `wc -l` per line dari errornya setelah itu dimasukkan ke dalam variable. Lalu buat header `error_message.csv`, print kalimat error dan countnya dengan di sort dan dibagi menjadi 2 kolom menjadi -k2.
+Setelah kita mencari error yang dibutuhkan dengan menggunakan grep dari `syslog.log`, kita hitung dengan `wc -l` per line dari errornya setelah itu dimasukkan ke dalam variable. Lalu buat header `error_message.csv`, print kalimat error dan countnya dengan di sort dan dibagi menjadi 2 kolom menjadi -k2.\
+![image](https://user-images.githubusercontent.com/73484021/113472851-ee0d1100-948f-11eb-87df-585ac12dbd0b.png)
+
 Kelima, untuk mencari jumlah error dan info beserta usernamenya dapat dilakukan dengan perintah berikut :
 ```
 tr ' ' '\n' < syslog.log > test.txt
@@ -41,7 +58,9 @@ echo "$userName,$info,$error" >> user_statistic.csv
 done < user_statistic.txt
 ```
 Pisahkan semua kata dari linenya menggunakan tr ' ' '\n' mengganti spasi menjadi newline dari `syslog.log` dan pindahkan datanya ke `test.txt`. Ambil semua nama dengan grep yang ada () pada `test.txt` lalu hapus "(" dan ")", sort, uniq, dan input ke user_statistic.txt. Lalu buat header pada `user_statistic.csv`.
-Gunakan `while` untuk menghitung jumlah error dan info tiap usernamenya menggunakan `grep` lalu masukkan ke `user_statistic.csv`.
+Gunakan `while` untuk menghitung jumlah error dan info tiap usernamenya menggunakan `grep` lalu masukkan ke `user_statistic.csv`.\
+![image](https://user-images.githubusercontent.com/73484021/113472890-3f1d0500-9490-11eb-8ba5-8dbc5cfaa7fb.png)
+
 
 
 ## 2. Kesimpulan TokoShiSop
