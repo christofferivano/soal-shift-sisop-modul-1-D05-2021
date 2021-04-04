@@ -76,7 +76,7 @@ Kesimpulan pertama yang diminta pada soal ini adalah **Row ID dan Profit Pencent
 Transaksi terakhir dengan profit percentage terbesar yaitu *ID Transaksi* dengan persentase *Profit Percentage*%.
 ```
 
-Untuk menampilkan profit percentage terbesar beserta id transaksi yang dimiliki row id terbesar, kita dapat menulis perintah pada soal2_generate_laporan_ihir_shisop.sh sebagai berikut:
+Untuk menampilkan id transaksi terbaru yang memiliki profit percentage terbesar, kita dapat menulis perintah pada soal2_generate_laporan_ihir_shisop.sh sebagai berikut:
 ```
 {
 	#a
