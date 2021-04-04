@@ -258,11 +258,19 @@ xargs rm
 
 i=1
 for fi in Koleksi_*; do
-	mv "$fi" Koleksi_$i
+	if [ $i -le 9 ]
+	then
+	mv "$fi" Koleksi_0$i
 	i=$((i+1))
+	else
+        mv "$fi" Koleksi_$i
+        i=$((i+1))
+	fi
 done
 ```
 Menggabungkan semuanya dan menyimpan script dengan nama soal3a.sh.
+![Screenshot 2021-04-04 163346](https://user-images.githubusercontent.com/73422724/113505463-38ae8c00-9569-11eb-8549-fd545aa6990f.png)
+
 ### 3. b Menjalankan script pengunduh foto secara terjadwal
 Script pengunduh foto yang telah dibuat dijadwalkan untuk dijalankan setiap pukul 20.00 dari tanggal 1 tujuh hari sekali dan dari tanggal 2 4 hari sekali tiap bulan. dengan menggunakan crontab script dijalankan kurang lebih seperti ini pengaturannya.
 ```
@@ -317,17 +325,29 @@ else
 fi
 ```
 Walaupun begitu, penyelesaian ini masih kurang tepat karena tiap tahunnya akan tetap menjalankan hal yang sama yang seharusnya bergantian sebab tanggal pada bulan Desember berakhir pada tanggal ganjil.
+![Screenshot 2021-04-04 163555](https://user-images.githubusercontent.com/73422724/113505481-61cf1c80-9569-11eb-9b1a-e227f5d2e4aa.png)
+![Screenshot 2021-04-04 163620](https://user-images.githubusercontent.com/73422724/113505483-6398e000-9569-11eb-86f7-58c7e8febc0e.png)
+
 ### 3. d Script yang menjadikan koleksi menjadi zip ber-password
-Langkah selanjutnya adalah membuat koleksi foto yang telah diunduh menjadi zip dengan password berupa tanggal dengan format "MMDDYYYY". Dengan command zip kita tambahkan perintahnya dalam script yang telah dibuat sebelumnya. Dalam membuat zip-nya, kita buat tidak sekadar membuat tapi menggunakan update sehingga jika file Koleksi.zip bisa di-create dan bilamana sudah ada kita tinggal menambahkan ke dalamnya. Sebelum itu, karena direktori sebelumnya kita ubah menjadi dalam folder yang telah dibuat, kita ubah lagi karena yang akan kita masukkan adalah foldernya ke dalam sebuah file zip. 
+Langkah selanjutnya adalah membuat koleksi foto yang telah diunduh menjadi zip dengan password berupa tanggal dengan format "MMDDYYYY". Dengan command zip kita cari direktori Kucing_* dan Kelinci_* menggunakan loop lalu beri perintah zip. Dalam membuat zip-nya, kita buat tidak sekadar membuat tapi menggunakan update sehingga jika file Koleksi.zip bisa di-create dan bilamana sudah ada kita tinggal menambahkan ke dalamnya. Setelah itu direktori yang berisi koleksi foto perlu dihapus setelah file zip dibuat menggunakan command -m.
 ```
-cd ~
-zip -u -m --password "$(date +"%m%d%Y")" -r Koleksi.zip "Kucing_$(date +"%d-%m-%Y")"
+cd /home/amanullahd
+for fi in Kucing_*; do
+	zip -u -m --password "$(date +"%m%d%Y")" -r Koleksi.zip "$fi"
+done
+
+for fi in Kelinci_*; do
+        zip -u -m --password "$(date +"%m%d%Y")" -r Koleksi.zip "$fi"
+done
 ```
 Ketika menjalankan fungsi untuk menjalankan pengunduh foto kelinci juga diperlakukan sama ditambahkan perintah tersebut dengan bedanya Kucing ==> Kelinci.
+
+![Screenshot 2021-04-04 164056](https://user-images.githubusercontent.com/73422724/113505493-701d3880-9569-11eb-9da6-fa6350d95f5e.png)
+
 ### 3. e Zip -> Unzip -> Zip
 Langkah terakhir adalah membuat zip hanya ketika waktu tertentu yaitu ketika pukul 07.00 sampai 18.00 dan selebihnya file zip tidak perlu ada. Hal ini dilakukan dengan perintah crontab sehingga sedemikian rupa.
 ```
-0 18 * * * unzip -P "$(date +"%m%d%Y")" Koleksi.zip -d Koleksi && rm Koleksi.zip
-0 7 * * * cd Koleksi && zip -u -m --password "$(date +"%m%d%Y")" -r ../Koleksi.zip*
+0 7 * * 1-5 /home/amanullahd/soal3d.sh
+0 18 * * 1-5 cd /home/amanullahd && unzip -P "$(date +"\%m\%d\%Y")" /home/amanullahd/Koleksi.zip && rm /home/amanullahd/Koleksi.zip
 ```
-Dikarenakan script yang dijalankan sudah membuat zip maka kita perlu melakukan unzip di waktu pukul 18.00 dan isinya disimpan sementara dalam sebuah folder bernama Koleksi, untuk file Koleksi.zip-nya kita hapus. Lalu, pada pukul 07.00 kita masukkan lagi dalam file Koleksi.zip koleksi foto-foto sebelumnya serta Foto.log yang telah dikeluarkan sehingga seluruh folder beserta file dalam folder Koleksi masuk kembali dalam Koleksi.zip.
+Pada pukul 07.00 pagi kita jalankan script untuk membuat zip serta menghapus semua jejak koleksi foto yang ada. Kemudian, ketika pukul 18.00 file Koleksi.zip yang telah dibuat kita extract menggunakan unzip disambung dengan menghapus file zip yang sudah tidak kita perlukan. Keduanya berjalan di hari yang sama sehingga password yang telah ditentukan adalah hari itu juga bisa kita otomatiskan saat hendak meng-extract direktori yang ada dalam file zip.
