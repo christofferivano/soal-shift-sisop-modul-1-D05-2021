@@ -20,6 +20,12 @@ xargs rm
 
 i=1
 for fi in Koleksi_*; do
+	if [ $i -le 9 ]
+	then
+	mv "$fi" Koleksi_0$i
+	i=$((i+1))
+	else
         mv "$fi" Koleksi_$i
         i=$((i+1))
+	fi
 done
