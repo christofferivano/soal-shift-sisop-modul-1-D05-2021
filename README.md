@@ -228,6 +228,10 @@ END {
 Sehingga dengan perintah-perintah di atas, output yang diperoleh pada hasil.txt adalah sebagai berikut.
 ![image](https://user-images.githubusercontent.com/76677130/113502671-f3ce2980-9557-11eb-9ec7-b3f30ad4ac64.png)
 
+Adapun kendala yang dialami selama pengerjaan adalah sebagai berikut:
+1. Perhitungan tidak mengikutsertakan angka di belakang titik (.) jika tidak menggunakan LC_NUMERIC=en_US
+2. Muncul error division by zero karena tidak menggunakan if(NR!=1) pada soal 2a
+3. Tidak dapat menggunakan index sebagai nama variabel
 
 
 ## 3. Koleksi Foto Kuuhaku
