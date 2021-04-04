@@ -61,7 +61,8 @@ Pisahkan semua kata dari linenya menggunakan tr ' ' '\n' mengganti spasi menjadi
 Gunakan `while` untuk menghitung jumlah error dan info tiap usernamenya menggunakan `grep` lalu masukkan ke `user_statistic.csv`.\
 ![image](https://user-images.githubusercontent.com/73484021/113472890-3f1d0500-9490-11eb-8ba5-8dbc5cfaa7fb.png)
 
-
+Kendala :\
+-Pada pengerjaan nomor 1b,1c karena muncul beberapa error saat menggunakan cut.
 
 ## 2. TokoShiSop
 Pada soal ini, kita diminta untuk mencari beberapa kesimpulan berdasarkan data penjualan pada `Laporan-TokoShiSop.tsv`, dimana kesimpulan tersebut dicari menggunakan script `soal2_generate_laporan_ihir_shisop.sh` dan hasil nya ditulis pada `hasil.txt`. 
